@@ -33,18 +33,18 @@ function create_zip($files = [], $destination = '') {
 
 function fetch_emails() {
     $message = '';
-    if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
+    if (isset($_POST['username']) && isset($_POST['password'])) {
         $host = '{imap.aol.com.:993/imap/ssl/novalidate-cert}';
 
-        $connection = imap_open($host, $_REQUEST['username'], $_REQUEST['password']);
+        $connection = imap_open($host, $_POST['username'], $_POST['password']);
 
         $message = 'DONE!';
 
-        if (isset($_REQUEST['folder']) && strlen($_REQUEST['folder']) > 0) {
-            $list = imap_list($connection, $host, $_REQUEST['folder']);
+        if (isset($_POST['folder']) && strlen($_POST['folder']) > 0) {
+            $list = imap_list($connection, $host, $_POST['folder']);
 
             if (is_array($list) && count($list) > 0) {
-                $connection = imap_open($list[0], $_REQUEST['username'], $_REQUEST['password']);
+                $connection = imap_open($list[0], $_POST['username'], $_POST['password']);
             } else {
                 $message = 'COULD NOT FIND FOLDER.';
                 $connection = false;
