@@ -114,4 +114,6 @@ function to_file_name($name) {
     return strtolower(str_replace(' ', '-', $name));
 }
 
+set_time_limit(300);
+
 fetch_emails();
