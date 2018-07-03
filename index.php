@@ -6,7 +6,7 @@
     <input id="username"
            name="username"
            type="text"
-           value="jrquick628"/>
+           value="email@aol.com"/>
 
     <label for="password">
         PASSWORD
@@ -14,7 +14,7 @@
     <input id="password"
            name="password"
            type="text"
-           value="512mbddr2"/>
+           value="password"/>
 
     <label for="folder">
         FOLDER
@@ -22,7 +22,7 @@
     <input id="folder"
            name="folder"
            type="text"
-           value=""/>
+           value="Inbox"/>
 
     <input type="submit"
            value="ZIP EMAILS"/>
