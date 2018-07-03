@@ -58,7 +58,7 @@ function fetch_emails() {
 
             $files = [];
             for ($i = 1; $i <= $message_count; ++$i) {
-                $raw_full_email = imap_fetchbody($connection, $i);
+                $raw_full_email = imap_fetchbody($connection, $i, '');
 
                 $header = imap_headerinfo($connection, $i);
 
