@@ -35,13 +35,22 @@ function fetch_emails() {
     $message = '';
     if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
         $host = '{imap.aol.com.:993/imap/ssl/novalidate-cert}';
-        if (isset($_REQUEST['folder']) && strlen($_REQUEST['folder']) > 0) {
-            $host .= $_REQUEST['folder'];
-        }
 
         $connection = imap_open($host, $_REQUEST['username'], $_REQUEST['password']);
 
         $message = 'DONE!';
+
+        if (isset($_REQUEST['folder']) && strlen($_REQUEST['folder']) > 0) {
+            $list = imap_list($connection, $host, $_REQUEST['folder']);
+
+            if (is_array($list) && count($list) > 0) {
+                $connection = imap_open($list[0], $_REQUEST['username'], $_REQUEST['password']);
+            } else {
+                $message = 'COULD NOT FIND FOLDER.';
+                $connection = false;
+            }
+        }
+
         if ($connection) {
             exec('mkdir -p emails/');
 
@@ -49,7 +58,7 @@ function fetch_emails() {
 
             $files = [];
             for ($i = 1; $i <= $message_count; ++$i) {
-                $raw_full_email = imap_fetchbody($connection, $i, "");
+                $raw_full_email = imap_fetchbody($connection, $i);
 
                 $header = imap_headerinfo($connection, $i);
 
@@ -90,7 +99,10 @@ function fetch_emails() {
                 }
             }
         } else {
-            $message = json_encode(imap_errors());
+            $errors = imap_errors();
+            if (count($errors) > 0) {
+                $message = json_encode($errors);
+            }
         }
     }
 
