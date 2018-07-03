@@ -2,7 +2,7 @@
 function create_zip($files = [], $destination = '') {
     $destination = uniqid($destination.'-').'.zip';
 
-    $fullPath = getcwd().'/emails/'.$destination;
+    $fullPath = getcwd().'/'.$destination;
 
     if (count($files)) {
         $overwrite = ZIPARCHIVE::CREATE;
@@ -19,7 +19,7 @@ function create_zip($files = [], $destination = '') {
 
         if ($canZip) {
             foreach ($files as $file) {
-                $zip->addFile($file, $file);
+                $zip->addFile($file['full'], $file['name']);
             }
 
             $zip->close();
@@ -51,15 +51,18 @@ function fetch_emails() {
             for ($i = 1; $i <= 3; ++$i) {
                 $raw_full_email = imap_fetchbody($connection, $i, "");
 
-                $fileName = $i;
-                $path = 'emails/' . $fileName . ".txt";
+                $header = imap_headerinfo($connection, $i);
 
-                $file = tmpfile();
-                fwrite($file, $raw_full_email);
+                $fileName = to_file_name($i.'_'.$header->Subject . ".txt");
 
-                fclose($file);
+                $temp = tempnam(sys_get_temp_dir(), $fileName);
 
-                $files[] = $path;
+                file_put_contents($temp, $raw_full_email);
+
+                $files[] = [
+                    'full' => $temp,
+                    'name' => $fileName
+                ];
             }
 
             imap_close($connection);
@@ -81,11 +84,9 @@ function fetch_emails() {
 
                     readfile($zip);
 
-                    exit();
-                }
+                    exec('rm '.$zip);
 
-                if (file_exists($zip)) {
-                    unlink($zip);
+                    exit();
                 }
             }
         } else {
@@ -95,6 +96,10 @@ function fetch_emails() {
 
     header("Location: index.php?message=".$message);
     die();
+}
+
+function to_file_name($name) {
+    return strtolower(str_replace(' ', '-', $name));
 }
 
 fetch_emails();
