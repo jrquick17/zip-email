@@ -1,0 +1,23 @@
+{
+  "name": "zip-email",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.php",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrquick17/zip-align.git"
+  },
+  "author": "Jeremy Quick <jrquick17@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jrquick17/zip-align/issues"
+  },
+  "homepage": "https://github.com/jrquick17/zip-align#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "bootstrap": "^4.1.1"
+  }
+}
