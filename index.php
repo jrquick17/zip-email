@@ -3,6 +3,8 @@
 <head>
     <title>Zip Email</title>
 
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
     <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet"/>
 
@@ -63,7 +65,8 @@
             </div>
         </div>
 
-        <div class="col-12 form-group">
+        <div id="folder-form-group"
+             class="col-12 form-group">
             <label for="folder">
                 FOLDER
             </label>
@@ -72,6 +75,25 @@
                    name="folder"
                    type="text"
                    placeholder="Inbox"/>
+            <div class="input-group-append">
+                <button id="load-folder-button"
+                        class="btn btn-outline-secondary"
+                        type="button">
+                    OR LOAD FOLDER OPTIONS
+                </button>
+            </div>
+        </div>
+
+        <div id="folder-select-form-group"
+             class="form-group">
+            <label for="exampleFormControlSelect1">Example select</label>
+            <select class="form-control" id="exampleFormControlSelect1">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
         </div>
 
         <div class="col-12">
@@ -90,21 +112,53 @@
     <script>
         (function() {
             'use strict';
-            window.addEventListener('load', function() {
-                var forms = document.getElementsByClassName('zip-form');
-
-                Array.prototype.filter.call(forms, function(form) {
-                    form.addEventListener('submit', function(event) {
+            window.addEventListener('load',
+                function() {
+                    var checkForm = function(form, event) {
                         if (form.checkValidity() === false) {
                             event.preventDefault();
                             event.stopPropagation();
                         }
 
                         form.classList.add('was-validated');
-                    }, false);
-                });
-            }, false);
-        })();
+                    };
+
+                    var forms = document.getElementsByClassName('zip-form');
+
+                    Array.prototype.filter.call(
+                        forms,
+                        function(form) {
+                            form.addEventListener('submit', checkForm.bind(form), false);
+                        }
+                    );
+
+                    Array.prototype.filter.call(
+                        $('#load-folder-button'),
+                        function(form) {
+                            form.addEventListener('submit', checkForm.bind(form), false);
+                        }
+                    );
+                }, false);
+
+
+                $('#load-folder-button').click(
+                    function() {
+                        $('#folder-form-group').addClass('hidden');
+
+                        $.ajax({
+                            url: "zip-email.php?action=getFolderOptions",
+                            context: document.body
+                        }).done(
+                            function(response) {
+                                alert(response);
+
+                                $('#folder-select-form-group').removeClass('hidden');
+                            }
+                        );
+                    }
+                );
+            }
+        )();
     </script>
 </body>
 </html>
