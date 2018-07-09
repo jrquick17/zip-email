@@ -1,4 +1,22 @@
 <?php
+require_once __DIR__.'/imap.php';
+
+$GLOBALS['imap'] = false;
+
+function _main() {
+    set_time_limit(300);
+
+    $action = $_GET['action'];
+    if ($action === 'getFolderOptions') {
+        $message = getFolderOptions();
+    } else {
+        $message = fetch_emails();
+    }
+
+    header("Location: index.php?message=".$message);
+    die();
+}
+
 function create_zip($files = [], $destination = '') {
     $destination = uniqid($destination.'-').'.zip';
 
@@ -33,34 +51,34 @@ function create_zip($files = [], $destination = '') {
 
 function fetch_emails() {
     $message = '';
-    if (isset($_POST['username']) && isset($_POST['password'])) {
-        $host = '{imap.aol.com.:993/imap/ssl/novalidate-cert}';
 
-        $connection = imap_open($host, $_POST['username'], $_POST['password']);
-
+    $imap = getImapClient();
+    if ($imap) {
         $message = 'DONE!';
 
         if (isset($_POST['folder']) && strlen($_POST['folder']) > 0) {
-            $list = imap_list($connection, $host, $_POST['folder']);
+            $list = $imap->getFolderNames($_POST['folder']);
 
             if (is_array($list) && count($list) > 0) {
-                $connection = imap_open($list[0], $_POST['username'], $_POST['password']);
+                $imap = $imap->getFolder($list[0]);
             } else {
                 $message = 'COULD NOT FIND FOLDER.';
-                $connection = false;
+                $imap = false;
             }
         }
 
-        if ($connection) {
+        if ($imap) {
             exec('mkdir -p emails/');
 
-            $message_count = imap_num_msg($connection);
+            $message_count = $imap->getCount();
 
             $files = [];
             for ($i = 1; $i <= $message_count; ++$i) {
-                $raw_full_email = imap_fetchbody($connection, $i, '');
+                $email = $imap->getEmail($i);
 
-                $header = imap_headerinfo($connection, $i);
+                $raw_full_email = $email->getBody();
+
+                $header = $email->getHeader();
 
                 $fileName = to_file_name($i.'_'.$header->Subject . ".txt");
 
@@ -74,7 +92,7 @@ function fetch_emails() {
                 ];
             }
 
-            imap_close($connection);
+            $imap->close();
 
             $zip = create_zip($files, 'zip');
 
@@ -99,21 +117,40 @@ function fetch_emails() {
                 }
             }
         } else {
-            $errors = imap_errors();
+            $errors = $imap->getErrors();
             if (count($errors) > 0) {
                 $message = json_encode($errors);
             }
         }
     }
 
-    header("Location: index.php?message=".$message);
-    die();
+    return $message;
 }
 
 function to_file_name($name) {
     return strtolower(str_replace(' ', '-', $name));
 }
 
-set_time_limit(300);
+function getImapClient() {
+    if ($GLOBALS['imap'] === false) {
+        if (isset($_POST['username']) && isset($_POST['password'])) {
+            $GLOBALS['imap'] = new Imap($_POST['username'], $_POST['password']);
+        }
+    }
 
-fetch_emails();
+    return $GLOBALS['imap'];
+}
+
+function getFolderOptions() {
+    $message = '';
+    $imap = getImapClient();
+    if ($imap) {
+        $folders = $imap->getFolderNames();
+    } else {
+        $message = 'Could not get folder options';
+    }
+
+    return $message;
+}
+
+_main();
