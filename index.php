@@ -145,13 +145,18 @@
                     function() {
                         $('#folder-form-group').addClass('hidden');
 
+                        var data = {
+                            username: $('#username')[0].value,
+                            password: $('#password')[0].value
+                        };
+
                         $.ajax({
-                            url: "zip-email.php?action=getFolderOptions",
-                            context: document.body
+                            data:    data,
+                            url:     'convert.php?action=getFolderOptions',
+                            context: document.body,
+                            type:    'POST'
                         }).done(
                             function(response) {
-                                alert(response);
-
                                 $('#folder-select-form-group').removeClass('hidden');
                             }
                         );
