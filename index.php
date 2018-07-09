@@ -30,7 +30,7 @@
 
     <form class="row zip-form"
           novalidate
-          action="/convert.php"
+          action="convert.php?redirect=true"
           method="POST">
         <div class="col-sm-12 col-md-6 form-group">
             <label for="username">
@@ -41,6 +41,7 @@
                    name="username"
                    type="text"
                    placeholder="jrquick"
+                   value="<?= $_GET['username'] ?>"
                    required/>
 <!--                <div class="input-group-append">-->
 <!--                    <div class="input-group-text">@AOL.COM</div>-->
@@ -59,6 +60,7 @@
                    name="password"
                    type="password"
                    placeholder="********"
+                   value="<?= $_GET['password'] ?>"
                    required/>
             <div class="invalid-feedback">
                 Please enter a password.
