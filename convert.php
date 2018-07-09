@@ -56,8 +56,9 @@ function fetch_emails() {
     if ($imap) {
         $message = 'DONE!';
 
-        if (isset($_POST['folder']) && strlen($_POST['folder']) > 0) {
-            $list = $imap->getFolderNames($_POST['folder']);
+        $folder = getRequestVar('folder');
+        if ($folder) {
+            $list = $imap->getFolderNames($folder);
 
             if (is_array($list) && count($list) > 0) {
                 $imap = $imap->getFolder($list[0]);
@@ -127,14 +128,27 @@ function fetch_emails() {
     return $message;
 }
 
+function getRequestVar($name) {
+    $returnVar = false;
+    if (isset($_POST[$name]) && strlen($_POST[$name]) > 0) {
+        $returnVar = $_POST[$name];
+    } else if (isset($_GET[$name]) && strlen($_GET[$name]) > 0) {
+        $returnVar = $_GET[$name];
+    }
+
+    return $returnVar;
+}
 function to_file_name($name) {
     return strtolower(str_replace(' ', '-', $name));
 }
 
 function getImapClient() {
     if ($GLOBALS['imap'] === false) {
-        if (isset($_POST['username']) && isset($_POST['password'])) {
-            $GLOBALS['imap'] = new Imap($_POST['username'], $_POST['password']);
+        $username = getRequestVar('username');
+        $password = getRequestVar('password');
+
+        if ($username && $password) {
+            $GLOBALS['imap'] = new Imap($username, $password);
         }
     }
 
