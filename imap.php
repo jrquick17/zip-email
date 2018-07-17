@@ -11,7 +11,7 @@ class Imap {
     private $username = false;
     private $password = false;
 
-    public function __construct($host = EmailHosts::AOL, $username, $password) {
+    public function __construct($username, $password, $host = EmailHosts::AOL) {
         $this->host = $host;
         $this->username = $username;
         $this->password = $password;
@@ -28,7 +28,16 @@ class Imap {
     }
 
     private function _getHost($host) {
-        return $this->_get($host, $this->connection);
+        return $this->_get($host, $this->host);
+    }
+
+    private function _toFolderName($name, $host = false) {
+        $host = $this->_getHost($host);
+        if (!strstr($name, $host)) {
+            $name = $host.$name;
+        }
+
+        return $name;
     }
 
     public function close($connection = false) {
@@ -77,6 +86,8 @@ class Imap {
     }
 
     public function getFolder($name = false) {
+        $name = $this->_toFolderName($name);
+
         if (!isset($folders[$name])) {
             $this->folders[$name] = $this->getConnection($name);
         }
@@ -84,7 +95,25 @@ class Imap {
         return $this->folders[$name];
     }
 
-    public function getFolderNames($pattern = '*', $host = false) {
-        return imap_list($this->connection, $this->_getHost($host), $pattern);
+    public function getFolders($host = false, $pattern = '*') {
+        $list = imap_list($this->connection, $this->_getHost($host), $pattern);
+        if ($list === false || is_null($list)) {
+            $errors  = $this->getErrors();
+        }
+
+        return $list;
+    }
+
+    public function getFolderNames($host = false, $pattern = '*') {
+        $host = $this->_getHost($host);
+
+        $folders = $this->getFolders($host, $pattern);
+
+        $names = [];
+        foreach ($folders as $folder) {
+            $names[] = str_replace($host, '', $folder);
+        }
+
+        return $names;
     }
 }
