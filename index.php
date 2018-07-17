@@ -21,16 +21,27 @@
     <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-    <?php if (isset($_GET['message'])) { ?>
-        <div class="alert alert-danger"
-             role="alert">
-            <?= $_GET['message'] ?>
+    <div id="error-alert"
+         class="alert alert-danger"
+         role="alert">
+        No errors.
+    </div>
+
+    <div id="loading-animation"
+         class="modal hide"
+         tabindex="-1"
+         role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center modal-text">
+                    <p>Loading...</p>
+                </div>
+            </div>
         </div>
-    <? } ?>
+    </div>
 
     <form class="row zip-form"
           novalidate
-          action="convert.php?redirect=true"
           method="POST">
         <div class="col-sm-12 col-md-6 form-group">
             <label for="username">
@@ -67,85 +78,156 @@
             </div>
         </div>
 
-        <div id="folder-form-group"
-             class="col-12 form-group">
-            <label for="folder">
-                FOLDER
+        <div id="folder-text-input"
+             class="col-12">
+            <label for="folder-text">
+                Folder Name
             </label>
-            <input class="form-control"
-                   id="folder"
-                   name="folder"
-                   type="text"
-                   placeholder="Inbox"/>
-            <div class="input-group-append">
-                <button id="load-folder-button"
-                        class="btn btn-outline-secondary"
-                        type="button">
-                    OR LOAD FOLDER OPTIONS
-                </button>
+            <div class="input-group">
+                <input class="form-control"
+                       id="folder-text"
+                       name="folder"
+                       type="text"
+                       placeholder="Inbox"/>
+                <div class="input-group-append">
+                    <button id="load-folder-button"
+                            class="btn btn-outline-secondary"
+                            type="button">
+                        Load Folder Options
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div id="folder-select-form-group"
-             class="form-group">
-            <label for="exampleFormControlSelect1">Example select</label>
-            <select class="form-control" id="exampleFormControlSelect1">
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
+        <div id="folder-select-input"
+             class="form-group col-12">
+            <label for="folder-select">
+                Select A Folder...
+            </label>
+            <select id="folder-select"
+                    class="form-control">
             </select>
         </div>
 
-        <div class="col-12">
-            <small class="form-text text-muted">
-                No worries, your information is not shared nor stored in any way.
-            </small>
-        </div>
-
-        <div class="col-12">
-            <input class="btn btn-primary zip-button"
+        <div class="buttons col-12">
+            <input id="zip-button"
+                   class="btn btn-primary zip-button"
                    type="submit"
                    value="ZIP EMAILS"/>
+            <small class="form-text text-muted text-right">
+                *No worries, your information is not shared nor stored in any way.
+            </small>
         </div>
     </form>
 
-    <script>
+    <script type="text/javascript">
         (function() {
             'use strict';
-            window.addEventListener('load',
+            window.addEventListener(
+                'load',
                 function() {
-                    var checkForm = function(form, event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
+                    $('.zip-form').submit(
+                        function() {
+                            beginLoading();
 
-                        form.classList.add('was-validated');
-                    };
+                            if (this.checkValidity() === false) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
 
-                    var forms = document.getElementsByClassName('zip-form');
+                            this.classList.add('was-validated');
 
-                    Array.prototype.filter.call(
-                        forms,
-                        function(form) {
-                            form.addEventListener('submit', checkForm.bind(form), false);
-                        }
-                    );
+                            var values = {};
+                            $.each(
+                                $('.zip-form').serializeArray(),
+                                function(i, field) {
+                                    values[field.name] = field.value;
+                                }
+                            );
 
-                    Array.prototype.filter.call(
-                        $('#load-folder-button'),
-                        function(form) {
-                            form.addEventListener('submit', checkForm.bind(form), false);
+                            $.ajax({
+                                data: values,
+                                url:  'convert.php?action=getEmails',
+                                type: 'POST'
+                            }).done(
+                                function(response) {
+                                    if (typeof response.errors !== 'undefined') {
+                                        displayErrors({errors: 'Done'});
+                                    } else if (typeof response.errors === 'undefined') {
+                                        displayErrors(response);
+                                    } else {
+                                        displayErrors({errors: 'Unknown error occurred.'});
+                                    }
+
+                                    endLoading();
+                                }
+                            );
+
+                            return false;
                         }
                     );
                 }, false);
 
+                var displayErrors = function(response) {
+                    var element = $('#error-alert');
+
+                    element.hide();
+                    element.text(response.errors);
+                    element.show();
+                };
+
+                var beginLoading = function() {
+                    $('#error-alert').hide();
+
+                    showLoading();
+
+                    $('#zip-button').prop('disabled', true);
+                };
+
+                var endLoading = function() {
+                    hideLoading();
+
+                    $('#zip-button').prop('disabled', false);
+                };
+
+                var hideLoading = function() {
+                    $('.modal-backdrop').hide();
+                    $('#loading-animation').hide();
+                };
+
+                var showLoading = function() {
+                    $('.modal-backdrop').show();
+                    $('#loading-animation').show();
+                };
+
+                var revertFolderSelect = function(error) {
+                    var response = {
+                        errors: [
+                            error
+                        ]
+                    };
+
+                    displayErrors(response);
+
+                    $('#folder-text-input').show();
+                };
+
+                $('#folder-select-input').hide();
+                $('#error-alert').hide();
+
+                $('#loading-animation').modal({
+                    backdrop: 'static',
+                    focus:    true,
+                    keyboard: false,
+                    show:     true,
+                });
+                hideLoading();
 
                 $('#load-folder-button').click(
                     function() {
-                        $('#folder-form-group').addClass('hidden');
+                        beginLoading();
+
+                        $('#folder-text-input').hide();
 
                         var data = {
                             username: $('#username')[0].value,
@@ -159,7 +241,51 @@
                             type:    'POST'
                         }).done(
                             function(response) {
-                                $('#folder-select-form-group').removeClass('hidden');
+                                try {
+                                    response = JSON.parse(response);
+
+                                    if (typeof response.folders !== 'undefined' && typeof response.folders.length !== 'undefined') {
+                                        var items = response.folders;
+                                        if (items.length === 0) {
+                                            revertFolderSelect('No folders found.');
+                                        } else {
+                                            $('#folder-select option').remove();
+
+                                            $.each(
+                                                items,
+                                                function (i, item) {
+                                                    $('#folder-select').append(
+                                                        $(
+                                                            '<option>',
+                                                            {
+                                                                value: item,
+                                                                text:  item
+                                                            }
+                                                        )
+                                                    );
+                                                }
+                                            );
+
+                                            $('#folder-select-input').show();
+                                        }
+                                    } else {
+                                        if (typeof response.errors !== 'undefined') {
+                                            displayErrors(response);
+                                        }
+
+                                        $('#folder-text-input').show();
+                                    }
+                                } catch(e) {
+                                    revertFolderSelect('Invalid response returned.');
+                                }
+
+                                endLoading();
+                            }
+                        ).fail(
+                            function() {
+                                revertFolderSelect('An unknown error occurred.');
+
+                                endLoading();
                             }
                         );
                     }

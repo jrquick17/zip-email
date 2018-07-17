@@ -1,5 +1,13 @@
+.buttons {
+    margin-top: 25px;
+}
+
 .hidden {
     display: none;
+}
+
+.modal-text {
+    font-size: 40px;
 }
 
 .zip-button {
