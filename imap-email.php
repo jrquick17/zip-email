@@ -4,17 +4,21 @@ class ImapEmail {
 
     private $i;
 
-    function __construct($connection, $i = 0)  {
-        $this->connection = $connection;
+    function __construct($imap, $i = 0)  {
+        $this->imap = $imap;
 
         $this->i = $i;
     }
 
     function getBody($section = '') {
-        return imap_fetchbody($this->connection, $this->i, $section);
+        return imap_fetchbody($this->getConnection(), $this->i, $section);
+    }
+
+    function getConnection() {
+        return $this->imap->getConnection();
     }
 
     function getHeader() {
-        return imap_headerinfo($this->connection, $this->i);
+        return imap_headerinfo($this->getConnection(), $this->i);
     }
 }
