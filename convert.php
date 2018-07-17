@@ -8,12 +8,12 @@ function _main() {
 
     $action = $_GET['action'];
     if ($action === 'getFolderOptions') {
-        $message = getFolderOptions();
+        $response = getFolderOptions();
     } else {
-        $message = fetch_emails();
+        $response = fetch_emails();
     }
 
-    header("Location: index.php?message=".$message);
+    echo json_encode($response);
     die();
 }
 
@@ -50,11 +50,11 @@ function create_zip($files = [], $destination = '') {
 }
 
 function fetch_emails() {
-    $message = '';
+    $response = [];
 
     $imap = getImapClient();
     if ($imap) {
-        $message = 'DONE!';
+        $response['message'] = 'DONE!';
 
         $folder = getRequestVar('folder');
         if ($folder) {
@@ -63,7 +63,10 @@ function fetch_emails() {
             if (is_array($list) && count($list) > 0) {
                 $imap = $imap->getFolder($list[0]);
             } else {
-                $message = 'COULD NOT FIND FOLDER.';
+                $response['errors'] = [
+                    'Could not find folder.'
+                ];
+
                 $imap = false;
             }
         }
@@ -120,12 +123,12 @@ function fetch_emails() {
         } else {
             $errors = $imap->getErrors();
             if (count($errors) > 0) {
-                $message = json_encode($errors);
+                $response['errors'] = $errors;
             }
         }
     }
 
-    return $message;
+    return $response;
 }
 
 function getRequestVar($name) {
@@ -156,15 +159,22 @@ function getImapClient() {
 }
 
 function getFolderOptions() {
-    $message = '';
+    $response = [];
+
     $imap = getImapClient();
     if ($imap) {
         $folders = $imap->getFolderNames();
+        if (is_null($folders)) {
+            $folders = [];
+        }
+        $response['folders'] = $folders;
     } else {
-        $message = 'Could not get folder options';
+        $response['errors'] = [
+            'Could not get folder options.'
+        ];
     }
 
-    return $message;
+    return $response;
 }
 
 _main();
