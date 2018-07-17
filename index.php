@@ -24,7 +24,7 @@
     <div id="error-alert"
          class="alert alert-danger"
          role="alert">
-        No errors.
+        No emails found.
     </div>
 
     <div id="loading-animation"
@@ -42,6 +42,8 @@
 
     <form class="row zip-form"
           novalidate
+          action="convert.php?action=getEmails"
+          target="_blank"
           method="POST">
         <div class="col-sm-12 col-md-6 form-group">
             <label for="username">
@@ -126,170 +128,152 @@
             window.addEventListener(
                 'load',
                 function() {
-                    $('.zip-form').submit(
+                    var displayErrors = function(response) {
+                        var element = $('#error-alert');
+
+                        element.hide();
+                        element.text(response.errors);
+                        element.show();
+                    };
+
+                    var beginLoading = function() {
+                        $('#error-alert').hide();
+
+                        showLoading();
+
+                        $('#zip-button').prop('disabled', true);
+                    };
+
+                    var endLoading = function() {
+                        hideLoading();
+
+                        $('#zip-button').prop('disabled', false);
+                    };
+
+                    var hideLoading = function() {
+                        $('.modal-backdrop').hide();
+                        $('#loading-animation').hide();
+                    };
+
+                    var showLoading = function() {
+                        $('.modal-backdrop').show();
+                        $('#loading-animation').show();
+                    };
+
+                    var revertFolderSelect = function(error) {
+                        var response = {
+                            errors: [
+                                error
+                            ]
+                        };
+
+                        displayErrors(response);
+
+                        $('#folder-text-input').show();
+                    };
+
+                    $('#folder-select-input').hide();
+                    $('#error-alert').hide();
+
+                    $('#loading-animation').modal({
+                        backdrop: 'static',
+                        focus:    true,
+                        keyboard: false,
+                        show:     true,
+                    });
+                    hideLoading();
+
+                    $('#folder-select').change(
+                        function() {
+                            $('#folder-text')[0].value = $('#folder-select option:selected')[0].value;
+                        }
+                    );
+
+                    $('#load-folder-button').click(
                         function() {
                             beginLoading();
 
+                            $('#folder-text-input').hide();
+
+                            var data = {
+                                username: $('#username')[0].value,
+                                password: $('#password')[0].value
+                            };
+
+                            $.ajax({
+                                data:    data,
+                                url:     'convert.php?action=getFolderOptions',
+                                context: document.body,
+                                type:    'POST'
+                            }).done(
+                                function(response) {
+                                    try {
+                                        response = JSON.parse(response);
+
+                                        if (typeof response.folders !== 'undefined' && typeof response.folders.length !== 'undefined') {
+                                            var items = response.folders;
+                                            if (items.length === 0) {
+                                                revertFolderSelect('No folders found.');
+                                            } else {
+                                                $('#folder-select option').remove();
+
+                                                var folderSelect = $('#folder-select');
+
+                                                folderSelect.append(
+                                                    $('<option>', {})
+                                                );
+
+                                                $.each(
+                                                    items,
+                                                    function(i, item) {
+                                                        folderSelect.append(
+                                                            $(
+                                                                '<option>',
+                                                                {
+                                                                    value: item,
+                                                                    text:  item
+                                                                }
+                                                            )
+                                                        );
+                                                    }
+                                                );
+
+                                                $('#folder-select-input').show();
+                                            }
+                                        } else {
+                                            if (typeof response.errors !== 'undefined') {
+                                                displayErrors(response);
+                                            }
+
+                                            $('#folder-text-input').show();
+                                        }
+                                    } catch(e) {
+                                        revertFolderSelect('Invalid response returned.');
+                                    }
+
+                                    endLoading();
+                                }
+                            ).fail(
+                                function() {
+                                    revertFolderSelect('An unknown error occurred.');
+
+                                    endLoading();
+                                }
+                            );
+                        }
+                    );
+
+                    $('.zip-form').submit(
+                        function() {
                             if (this.checkValidity() === false) {
                                 event.preventDefault();
                                 event.stopPropagation();
                             }
 
                             this.classList.add('was-validated');
-
-                            var values = {};
-                            $.each(
-                                $('.zip-form').serializeArray(),
-                                function(i, field) {
-                                    values[field.name] = field.value;
-                                }
-                            );
-
-                            $.ajax({
-                                data: values,
-                                url:  'convert.php?action=getEmails',
-                                type: 'POST'
-                            }).done(
-                                function(response) {
-                                    if (typeof response.errors !== 'undefined') {
-                                        displayErrors({errors: 'Done'});
-                                    } else if (typeof response.errors === 'undefined') {
-                                        displayErrors(response);
-                                    } else {
-                                        displayErrors({errors: 'Unknown error occurred.'});
-                                    }
-
-                                    endLoading();
-                                }
-                            );
-
-                            return false;
                         }
                     );
                 }, false);
-
-                var displayErrors = function(response) {
-                    var element = $('#error-alert');
-
-                    element.hide();
-                    element.text(response.errors);
-                    element.show();
-                };
-
-                var beginLoading = function() {
-                    $('#error-alert').hide();
-
-                    showLoading();
-
-                    $('#zip-button').prop('disabled', true);
-                };
-
-                var endLoading = function() {
-                    hideLoading();
-
-                    $('#zip-button').prop('disabled', false);
-                };
-
-                var hideLoading = function() {
-                    $('.modal-backdrop').hide();
-                    $('#loading-animation').hide();
-                };
-
-                var showLoading = function() {
-                    $('.modal-backdrop').show();
-                    $('#loading-animation').show();
-                };
-
-                var revertFolderSelect = function(error) {
-                    var response = {
-                        errors: [
-                            error
-                        ]
-                    };
-
-                    displayErrors(response);
-
-                    $('#folder-text-input').show();
-                };
-
-                $('#folder-select-input').hide();
-                $('#error-alert').hide();
-
-                $('#loading-animation').modal({
-                    backdrop: 'static',
-                    focus:    true,
-                    keyboard: false,
-                    show:     true,
-                });
-                hideLoading();
-
-                $('#load-folder-button').click(
-                    function() {
-                        beginLoading();
-
-                        $('#folder-text-input').hide();
-
-                        var data = {
-                            username: $('#username')[0].value,
-                            password: $('#password')[0].value
-                        };
-
-                        $.ajax({
-                            data:    data,
-                            url:     'convert.php?action=getFolderOptions',
-                            context: document.body,
-                            type:    'POST'
-                        }).done(
-                            function(response) {
-                                try {
-                                    response = JSON.parse(response);
-
-                                    if (typeof response.folders !== 'undefined' && typeof response.folders.length !== 'undefined') {
-                                        var items = response.folders;
-                                        if (items.length === 0) {
-                                            revertFolderSelect('No folders found.');
-                                        } else {
-                                            $('#folder-select option').remove();
-
-                                            $.each(
-                                                items,
-                                                function (i, item) {
-                                                    $('#folder-select').append(
-                                                        $(
-                                                            '<option>',
-                                                            {
-                                                                value: item,
-                                                                text:  item
-                                                            }
-                                                        )
-                                                    );
-                                                }
-                                            );
-
-                                            $('#folder-select-input').show();
-                                        }
-                                    } else {
-                                        if (typeof response.errors !== 'undefined') {
-                                            displayErrors(response);
-                                        }
-
-                                        $('#folder-text-input').show();
-                                    }
-                                } catch(e) {
-                                    revertFolderSelect('Invalid response returned.');
-                                }
-
-                                endLoading();
-                            }
-                        ).fail(
-                            function() {
-                                revertFolderSelect('An unknown error occurred.');
-
-                                endLoading();
-                            }
-                        );
-                    }
-                );
             }
         )();
     </script>
