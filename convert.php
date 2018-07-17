@@ -58,11 +58,9 @@ function fetch_emails() {
 
         $folder = getRequestVar('folder');
         if ($folder) {
-            $list = $imap->getFolderNames($folder);
+            $imap = $imap->getFolder($folder);
 
-            if (is_array($list) && count($list) > 0) {
-                $imap = $imap->getFolder($list[0]);
-            } else {
+             if (!$imap) {
                 $response['errors'] = [
                     'Could not find folder.'
                 ];
@@ -101,7 +99,7 @@ function fetch_emails() {
             $zip = create_zip($files, 'zip');
 
             if ($zip) {
-                if(file_exists($zip)){
+                if (file_exists($zip)){
                     //Set Headers:
                     header('Pragma: public');
                     header('Expires: 0');

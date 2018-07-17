@@ -89,7 +89,7 @@ class Imap {
         $name = $this->_toFolderName($name);
 
         if (!isset($folders[$name])) {
-            $this->folders[$name] = $this->getConnection($name);
+            $this->folders[$name] = new Imap($this->username, $this->password, $name);
         }
 
         return $this->folders[$name];
