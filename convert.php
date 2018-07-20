@@ -9,6 +9,8 @@ function _main() {
     $action = $_GET['action'];
     if ($action === 'getFolderOptions') {
         $response = getFolderOptions();
+    } else if ($action === 'getProviders') {
+        $response = getProviders();
     } else {
         $response = fetch_emails();
     }
@@ -144,16 +146,22 @@ function to_file_name($name) {
 }
 
 function getImapClient() {
-    if ($GLOBALS['imap'] === false) {
-        $username = getRequestVar('username');
-        $password = getRequestVar('password');
+    $imap = false;
 
-        if ($username && $password) {
-            $GLOBALS['imap'] = new Imap($username, $password);
+    $username = getRequestVar('username');
+    $password = getRequestVar('password');
+
+    if ($username && $password) {
+        $host = getRequestVar('provider');
+
+        if ($host) {
+            $imap = new Imap($username, $password, $host);
+        } else {
+            $imap = new Imap($username, $password);
         }
     }
 
-    return $GLOBALS['imap'];
+    return $imap;
 }
 
 function getFolderOptions() {
@@ -171,6 +179,14 @@ function getFolderOptions() {
             'Could not get folder options.'
         ];
     }
+
+    return $response;
+}
+
+function getProviders() {
+    $response = [];
+
+    $response['providers'] = EmailHosts::getImapHosts();
 
     return $response;
 }

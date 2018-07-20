@@ -45,6 +45,22 @@
           action="convert.php?action=getEmails"
           target="_blank"
           method="POST">
+        <div id="provider-select-input"
+             class="form-group col-12">
+            <label for="provider-select">
+                Email Provider
+            </label>
+            <select id="provider-select"
+                    name="provider"
+                    class="form-control">
+                <option value="aol">AOL</option>
+                <option value="gmail">GMail</option>
+                <option value="outlook">Outlook</option>
+                <option value="yahoo">Yahoo</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
         <div class="col-sm-12 col-md-6 form-group">
             <label for="username">
                 Email
@@ -56,9 +72,6 @@
                    placeholder="jrquick"
                    value="<?= $_GET['username'] ?>"
                    required/>
-<!--                <div class="input-group-append">-->
-<!--                    <div class="input-group-text">@AOL.COM</div>-->
-<!--                </div>-->
             <div class="invalid-feedback">
                 Please enter an email address.
             </div>
@@ -196,6 +209,7 @@
                             $('#folder-text-input').hide();
 
                             var data = {
+                                provider: $('#provider-select option').filter(':selected').val(),
                                 username: $('#username')[0].value,
                                 password: $('#password')[0].value
                             };

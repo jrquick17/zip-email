@@ -11,8 +11,22 @@ class Imap {
     private $username = false;
     private $password = false;
 
-    public function __construct($username, $password, $host = EmailHosts::AOL) {
+    public function __construct($username, $password, $host = false) {
+        $host = strtolower($host);
+        if (array_key_exists($host, EmailHosts::HOST_LIST)) {
+            $host = EmailHosts::HOST_LIST[$host];
+        } else {
+            $host = false;
+        }
+
+        if ($host && array_key_exists('host', $host)) {
+            $host = $host['host'];
+        } else {
+            $host = 'aol';
+        }
+
         $this->host = $host;
+
         $this->username = $username;
         $this->password = $password;
 
