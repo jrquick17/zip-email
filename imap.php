@@ -11,7 +11,7 @@ class Imap {
     private $username = false;
     private $password = false;
 
-    public function __construct($username, $password, $host = false) {
+    public function __construct($username, $password, $host = '') {
         $host = strtolower($host);
         if (array_key_exists($host, EmailHosts::HOST_LIST)) {
             $host = EmailHosts::HOST_LIST[$host];
@@ -112,7 +112,7 @@ class Imap {
     public function getFolders($host = false, $pattern = '*') {
         $list = imap_list($this->connection, $this->_getHost($host), $pattern);
         if ($list === false || is_null($list)) {
-            $errors  = $this->getErrors();
+            $errors = $this->getErrors();
         }
 
         return $list;

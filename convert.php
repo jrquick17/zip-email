@@ -101,7 +101,7 @@ function fetch_emails() {
             $zip = create_zip($files, 'zip');
 
             if ($zip) {
-                if (file_exists($zip)){
+                if (file_exists($zip)) {
                     //Set Headers:
                     header('Pragma: public');
                     header('Expires: 0');

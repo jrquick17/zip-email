@@ -1,9 +1,15 @@
 <?php
 class ImapEmail {
-    private $connection;
+    private $imap;
 
     private $i;
 
+    /**
+     * ImapEmail constructor.
+     *
+     * @param Imap $imap
+     * @param int  $i
+     */
     function __construct($imap, $i = 0)  {
         $this->imap = $imap;
 
