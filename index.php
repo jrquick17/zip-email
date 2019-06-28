@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zip Email</title>
+  <title>Zip Email</title>
 
-    <script src="node_modules/jquery/dist/jquery.js"></script>
+  <script src="node_modules/jquery/dist/jquery.js"></script>
 
-    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet"/>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+  <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet"/>
 
-    <script src="lib/analytics.js"></script>
+  <script src="lib/analytics.js"></script>
 
-    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({
-            google_ad_client:      "ca-pub-3589546292454760",
-            enable_page_level_ads: true
-        });
-    </script>
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+      (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client:      "ca-pub-3589546292454760",
+          enable_page_level_ads: true
+      });
+  </script>
 
-    <link href="styles.css" rel="stylesheet"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75605274-10"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-75605274-10');
+  </script>
+
+  <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
     <div id="error-alert"
